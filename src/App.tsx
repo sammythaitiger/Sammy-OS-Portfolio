@@ -12,7 +12,7 @@ export default function App() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
-    <main className="min-h-screen bg-retro-bg selection:bg-retro-green selection:text-black">
+    <main className="h-[100svh] overflow-hidden bg-retro-bg selection:bg-retro-green selection:text-black">
       {!isLoaded ? (
         <Preloader onComplete={() => setIsLoaded(true)} />
       ) : (

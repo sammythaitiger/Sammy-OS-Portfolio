@@ -3,6 +3,16 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Folder, User, Code, Mail, X, Minus, Square } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
+const aboutPhotoSrc = '/images/about-samir.jpg';
+const luckyStrikeScreenshots = [
+  '/images/lucky-strike-1.jpg',
+  '/images/lucky-strike-2.jpg',
+  '/images/lucky-strike-3.jpg',
+];
+const githubProfileUrl = 'https://github.com/sammythaitiger';
+const thaiToneLabUrl = 'https://github.com/sammythaitiger/ThaiTone-Lab';
+const freeTorrentsWikiUrl = 'https://ru.wikipedia.org/wiki/Free-Torrents.org';
+
 const MatrixBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -72,7 +82,7 @@ const Window: React.FC<WindowProps> = ({ title, icon, isOpen, onClose, children,
           style={{ zIndex }}
           onMouseDown={onFocus}
           className={cn(
-            "absolute inset-0 md:inset-auto md:top-[48%] md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[92%] md:h-auto md:max-h-[85%] bg-[#1a1a1a] border-0 md:border-2 border-[#333] shadow-2xl flex flex-col md:rounded-sm overflow-hidden z-40",
+            "fixed inset-x-0 top-0 bottom-10 md:absolute md:inset-auto md:top-[48%] md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[92%] md:h-auto md:max-h-[85%] bg-[#1a1a1a] border-0 md:border-2 border-[#333] shadow-2xl flex flex-col rounded-t-xl md:rounded-sm overflow-hidden z-40",
             maxWidth
           )}
         >
@@ -99,7 +109,7 @@ const Window: React.FC<WindowProps> = ({ title, icon, isOpen, onClose, children,
           </div>
           
           {/* Content */}
-          <div className="flex-1 overflow-auto p-4 md:p-6 font-mono text-xs md:text-sm leading-relaxed custom-scrollbar pb-20 md:pb-6">
+          <div className="flex-1 overflow-auto p-4 md:p-6 font-mono text-xs md:text-sm leading-relaxed custom-scrollbar pb-24 md:pb-6">
             {children}
           </div>
         </motion.div>
@@ -230,11 +240,11 @@ export const Desktop: React.FC = () => {
   ];
 
   return (
-    <div className="relative w-full h-full p-6 select-none overflow-hidden min-h-full">
+    <div className="relative w-full h-[100svh] md:h-full px-4 pt-4 pb-14 md:p-6 select-none overflow-hidden">
       <MatrixBackground />
       
       {/* Glitch Text Background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-full flex justify-center items-center">
+      <div className="absolute top-[54%] md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-full flex justify-center items-center">
         <GlitchText />
       </div>
 
@@ -270,29 +280,20 @@ export const Desktop: React.FC = () => {
         onFocus={() => setActiveWindow('about')}
       >
         <div className="flex flex-col gap-8">
-          <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
             {/* Stylized Photo */}
             <motion.div 
               initial={{ opacity: 0, x: -50, rotateY: 90 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-              className="relative w-full md:w-64 aspect-square shrink-0 group"
+              className="relative w-full max-w-[280px] mx-auto md:mx-0 md:w-64 aspect-[5/4] md:aspect-square shrink-0 group"
             >
               <div className="absolute inset-0 bg-red-600/20 blur-xl group-hover:bg-red-600/40 transition-colors duration-500" />
               <div className="relative w-full h-full border-2 border-red-600 overflow-hidden bg-[#111] grayscale contrast-125 brightness-90 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700">
                 <img 
-                  src="https://storage.googleapis.com/m-infra.appspot.com/public/res/ais/vh6x36qnstd5nmilecdeac/input_file_3.png" 
+                  src={aboutPhotoSrc}
                   alt="Samir Akhmedoff" 
                   className="w-full h-full object-cover object-top"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (!target.src.includes('input_file_0')) {
-                      target.src = 'https://storage.googleapis.com/m-infra.appspot.com/public/res/ais/vh6x36qnstd5nmilecdeac/input_file_0.png';
-                    } else if (!target.src.includes('picsum')) {
-                      target.src = 'https://picsum.photos/seed/samir_dev/600/600';
-                    }
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-red-600/20 to-transparent opacity-50" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-red-600/50 animate-[scanline_4s_linear_infinite]" />
@@ -301,41 +302,67 @@ export const Desktop: React.FC = () => {
               <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-red-500" />
             </motion.div>
 
-          <div className="space-y-4 flex-1">
+          <div className="space-y-4 flex-1 min-w-0">
             <h2 className="text-xl md:text-2xl text-red-500 border-b border-red-900/30 pb-2 flex items-center gap-2 font-black">
               <span className="animate-pulse">●</span> SYSTEM_ARCHITECT: SAMIR_AKHMEDOFF
             </h2>
             <div className="space-y-4 text-sm md:text-base leading-relaxed">
               <p className="text-retro-green font-bold text-lg md:text-xl tracking-tight">
-                Digital Architect & Production Strategist.
+                Product engineer with deep production leadership and hands-on delivery skills.
               </p>
               <p className="text-retro-green/90">
-                A seasoned architect with a decade-long track record in production management and 
-                high-stakes engineering. I specialize in designing robust, scalable ecosystems and 
-                leading in-house development teams to deliver complex products from inception to global launch.
+                I combine large-scale production leadership with hands-on product development. My background
+                lets me move comfortably between strategy, team management, architecture, and direct
+                implementation across web, mobile, backend, and launch execution.
               </p>
-              <div className="space-y-3 border-l-2 border-red-600/50 pl-4 py-1 bg-red-600/5">
+              <div className="space-y-3 border-l-2 border-red-600/50 pl-3 md:pl-4 py-1 bg-red-600/5">
                 <div>
-                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Core_Architecture:</span>
-                  <p className="text-xs md:text-sm"><span className="text-white font-bold">Thai Tone Lab</span> — Full-cycle architectural design and development. Built with <span className="text-retro-amber">Expo, React Native, React Native Paper</span> and a <span className="text-retro-amber">Python-driven backend</span> for advanced tonal analysis.</p>
+                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Current_Focus:</span>
+                  <p className="text-xs md:text-sm">
+                    <a
+                      href={thaiToneLabUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white font-bold underline decoration-red-600/40 underline-offset-3 hover:text-red-400"
+                    >
+                      Thai Tone Lab
+                    </a>{' '}
+                    — a full-cycle mobile product I am designing and building myself with
+                    <span className="text-retro-amber"> Expo, React Native, React Native Paper</span> and a
+                    <span className="text-retro-amber"> Python backend</span> for tonal analysis.
+                  </p>
                 </div>
                 <div>
-                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Infrastructure_Legacy:</span>
-                  <p className="text-xs md:text-sm"><span className="text-white font-bold">Free-Torrents.org</span> — Architected and deployed a massive-scale community platform. Customized <span className="text-retro-amber">phpBB engine</span> and engineered server-side torrent infrastructure.</p>
+                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Execution_Model:</span>
+                  <p className="text-xs md:text-sm">
+                    I bring both sides of the equation: strong delivery leadership and the ability to sit down
+                    and build the product myself. That means fewer gaps between idea, execution, and release.
+                  </p>
                 </div>
                 <div>
-                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Methodology:</span>
-                  <p className="text-xs md:text-sm">Integrating <span className="text-white font-bold">AI-Augmented Architecture</span> to accelerate production cycles while maintaining enterprise-grade stability.</p>
+                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Recent_Shipped_Work:</span>
+                  <p className="text-xs md:text-sm">
+                    I recently designed and developed this portfolio experience as well. More live code and product work:
+                    {' '}
+                    <a
+                      href={githubProfileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white font-bold underline decoration-red-600/40 underline-offset-3 hover:text-red-400"
+                    >
+                      github.com/sammythaitiger
+                    </a>
+                  </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px] md:text-xs pt-2">
                 <div className="p-3 border border-retro-green/20 bg-retro-green/5 flex flex-col justify-center">
-                  <span className="text-retro-amber block mb-1 uppercase tracking-widest font-bold">Versatility:</span>
-                  Management + Engineering
+                  <span className="text-retro-amber block mb-1 uppercase tracking-widest font-bold">Strength:</span>
+                  Strategy + Execution
                 </div>
                 <div className="p-3 border border-red-900/20 bg-red-900/5 flex flex-col justify-center">
-                  <span className="text-red-500 block mb-1 uppercase tracking-widest font-bold">Reliability:</span>
-                  100% Delivery Rate
+                  <span className="text-red-500 block mb-1 uppercase tracking-widest font-bold">Range:</span>
+                  Team Leadership + Hands-On Build
                 </div>
               </div>
             </div>
@@ -344,7 +371,25 @@ export const Desktop: React.FC = () => {
 
         <div className="space-y-6">
             <h3 className="text-retro-amber border-b border-retro-amber/30 pb-1 uppercase tracking-widest">Experience_Log:</h3>
-            
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-start">
+                <h4 className="text-retro-green font-bold">2023 – Present · Product Development & Shipping</h4>
+                <span className="text-[10px] opacity-50">Apr 2023 – Present</span>
+              </div>
+              <p className="text-xs opacity-80 italic">Hands-on product engineering, delivery, and technical ownership</p>
+              <div className="pl-4 border-l border-retro-green/30 space-y-2 mt-2">
+                <p className="text-[11px] opacity-70">
+                  Focused on direct development, product execution, and shipping working systems from idea to release.
+                </p>
+                <ul className="text-[11px] list-disc list-inside opacity-70">
+                  <li>Building and launching products with React, React Native, Expo, Python, and Vite.</li>
+                  <li>Designing frontend architecture, mobile flows, APIs, and release-ready product structure.</li>
+                  <li>Owning delivery end-to-end: implementation, iteration, debugging, QA, and production readiness.</li>
+                </ul>
+              </div>
+            </div>
+
             {/* VMLY&R */}
             <div className="space-y-2">
               <div className="flex justify-between items-start">
@@ -403,34 +448,37 @@ export const Desktop: React.FC = () => {
         onFocus={() => setActiveWindow('projects')}
       >
         <div className="space-y-8">
+          <a
+            href={githubProfileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="group relative block overflow-hidden border-2 border-retro-green bg-retro-green/10 px-4 py-3 text-center shadow-[0_0_0_rgba(51,255,51,0.0)] transition-all duration-300 hover:bg-retro-green/15 hover:shadow-[0_0_30px_rgba(51,255,51,0.35)]"
+          >
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(51,255,51,0.18),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <div className="absolute inset-0 animate-pulse bg-retro-green/5" />
+            <span className="relative inline-flex items-center justify-center gap-2 font-mono text-xs md:text-sm font-bold uppercase tracking-[0.25em] text-retro-green">
+              Open Full GitHub Archive
+              <span className="text-red-500 animate-pulse">●</span>
+            </span>
+          </a>
+
           {/* Lucky Strike Special Section */}
-          <div className="border-2 border-red-600 p-4 bg-red-600/5">
-            <h3 className="text-red-500 font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+          <div className="border-2 border-red-600 p-3 md:p-4 bg-red-600/5">
+            <h3 className="text-red-500 font-black uppercase tracking-[0.18em] md:tracking-widest mb-4 flex items-center gap-2 text-xs md:text-base">
               <span className="animate-ping w-2 h-2 bg-red-500 rounded-full" />
               Featured_Project: Lucky Strike (BAT)
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              {[
-                "https://storage.googleapis.com/m-infra.appspot.com/public/res/ais/vh6x36qnstd5nmilecdeac/input_file_4.png",
-                "https://storage.googleapis.com/m-infra.appspot.com/public/res/ais/vh6x36qnstd5nmilecdeac/input_file_5.png",
-                "https://storage.googleapis.com/m-infra.appspot.com/public/res/ais/vh6x36qnstd5nmilecdeac/input_file_6.png"
-              ].map((src, i) => (
+            <div className="grid grid-flow-col auto-cols-[78%] sm:auto-cols-[52%] md:grid-flow-row md:auto-cols-auto md:grid-cols-3 gap-3 md:gap-4 mb-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar pr-1">
+              {luckyStrikeScreenshots.map((src, i) => (
                 <div 
                   key={i} 
-                  className="aspect-[9/19] border border-red-900/30 overflow-hidden group relative cursor-zoom-in"
+                  className="aspect-[9/16] md:aspect-[9/19] border border-red-900/30 overflow-hidden group relative cursor-zoom-in snap-start"
                   onClick={() => setSelectedImage(src)}
                 >
                   <img 
                     src={src} 
                     alt={`Lucky Strike ${i+1}`} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      if (!target.src.includes('picsum')) {
-                        target.src = `https://picsum.photos/seed/lucky_${i}/600/1200`;
-                      }
-                    }}
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                   />
                   <div className="absolute inset-0 bg-red-600/10 group-hover:bg-transparent transition-colors" />
                 </div>
@@ -444,14 +492,17 @@ export const Desktop: React.FC = () => {
             {[
               { 
                 name: 'Thai Tone Lab', 
-                desc: 'Full-cycle mobile development for tonal analysis. Developed entirely by me.', 
+                desc: 'A mobile product for tonal analysis designed and built by me from product concept to implementation.', 
                 tech: 'Expo, React Native, RN Paper, Python',
+                link: thaiToneLabUrl,
+                badge: 'GITHUB',
               },
               { 
                 name: 'Free-Torrents.org', 
                 desc: 'Legendary torrent community. Customized phpBB & server-side torrent systems.', 
                 tech: 'phpBB, Infrastructure, Server-Side',
-                link: 'https://ru.wikipedia.org/wiki/Free-Torrents.org'
+                link: freeTorrentsWikiUrl,
+                badge: 'WIKI',
               },
               { 
                 name: 'Parliament.ru', 
@@ -464,14 +515,23 @@ export const Desktop: React.FC = () => {
                 tech: 'Full-stack, Production Management' 
               },
             ].map((project, i) => (
-              <div key={i} className="border border-[#333] p-4 hover:border-red-600 transition-colors group cursor-pointer bg-black/20">
+              <a
+                key={i}
+                href={project.link}
+                target={project.link ? '_blank' : undefined}
+                rel={project.link ? 'noreferrer' : undefined}
+                className={cn(
+                  "border border-[#333] p-4 transition-colors group bg-black/20 block",
+                  project.link ? "cursor-pointer hover:border-red-600" : "cursor-default"
+                )}
+              >
                 <h3 className="text-retro-green mb-1 group-hover:text-red-500 transition-colors flex justify-between items-center">
                   {project.name}
-                  {project.link && <span className="text-[8px] border border-red-900 px-1 text-red-900">WIKI</span>}
+                  {project.link && <span className="text-[8px] border border-red-900 px-1 text-red-900">{project.badge}</span>}
                 </h3>
                 <p className="text-[11px] opacity-70 mb-3 leading-tight">{project.desc}</p>
                 <div className="text-[9px] font-bold text-retro-amber uppercase tracking-tighter">{project.tech}</div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
@@ -529,11 +589,11 @@ export const Desktop: React.FC = () => {
         onFocus={() => setActiveWindow('contact')}
         maxWidth="md:max-w-md"
       >
-        <div className="flex flex-col h-full gap-2 md:gap-4">
+        <div className="flex flex-col gap-3 md:gap-4">
           <p className="text-[10px] md:text-sm opacity-80 shrink-0">Ready to build something legendary?</p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
-            <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto pr-1 custom-scrollbar content-start">
+            <div className="flex items-center gap-2 md:gap-3 min-h-20 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">
               <Mail size={16} className="text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col min-w-0 overflow-hidden">
                 <span className="text-[8px] uppercase opacity-40 font-bold tracking-widest">Email</span>
@@ -541,11 +601,11 @@ export const Desktop: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">
+            <div className="flex items-center gap-2 md:gap-3 min-h-20 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">
               <Code size={16} className="text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col min-w-0 overflow-hidden">
                 <span className="text-[8px] uppercase opacity-40 font-bold tracking-widest">Github</span>
-                <span className="text-[9px] md:text-sm truncate font-mono text-retro-green">github.com/samir-dev</span>
+                <span className="text-[9px] md:text-sm truncate font-mono text-retro-green">github.com/sammythaitiger</span>
               </div>
             </div>
           </div>
@@ -559,7 +619,7 @@ export const Desktop: React.FC = () => {
       </Window>
 
       {/* Taskbar */}
-      <div className="absolute bottom-0 left-0 right-0 h-10 bg-[#1a1a1a] border-t-2 border-[#333] flex items-center px-2 md:px-4 justify-between z-[60]">
+      <div className="fixed md:absolute bottom-0 left-0 right-0 h-10 bg-[#1a1a1a] border-t-2 border-[#333] flex items-center px-2 md:px-4 justify-between z-[60]">
         <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
           <div className="px-2 md:px-3 py-1 bg-retro-green text-black font-bold text-[10px] md:text-xs cursor-pointer hover:bg-white transition-colors shrink-0">
             START

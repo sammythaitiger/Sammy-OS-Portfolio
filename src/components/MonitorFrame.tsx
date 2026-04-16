@@ -7,9 +7,9 @@ interface MonitorFrameProps {
 
 export const MonitorFrame: React.FC<MonitorFrameProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-0 md:p-2 lg:p-6">
+    <div className="h-[100svh] bg-[#050505] flex items-center justify-center p-0 md:p-2 lg:p-6 overflow-hidden">
       {/* MacBook-style Frame: Full screen on mobile, framed on desktop */}
-      <div className="relative w-full md:max-w-[1200px] h-screen md:h-[98vh] lg:h-[92vh] md:max-h-[900px] bg-[#050505] md:bg-[#d1d1d1] md:rounded-[24px] md:p-1 shadow-none md:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.7)] flex flex-col transition-all duration-500">
+      <div className="relative w-full h-[100svh] md:max-w-[1200px] md:h-[98vh] lg:h-[92vh] md:max-h-[900px] bg-[#050505] md:bg-[#d1d1d1] md:rounded-[24px] md:p-1 shadow-none md:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.7)] flex flex-col transition-all duration-500 overflow-hidden">
         
         {/* Screen Bezel */}
         <div className="relative flex-1 bg-black md:rounded-[20px] md:m-2 overflow-hidden flex flex-col shadow-inner">
