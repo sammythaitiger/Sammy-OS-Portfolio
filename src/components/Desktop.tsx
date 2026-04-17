@@ -166,7 +166,7 @@ const GlitchText: React.FC = () => {
         transition={{ duration: 4, repeat: Infinity }}
         className="text-sm sm:text-base md:text-2xl font-mono text-red-500/60 mt-2 md:mt-4 tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.6em] uppercase drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]"
       >
-        Web - Developer
+        Senior Production Leader
       </motion.div>
     </div>
   );
@@ -209,6 +209,75 @@ const Clippy: React.FC<{ visible: boolean; onClose: () => void }> = ({ visible, 
         </motion.div>
       )}
     </AnimatePresence>
+  );
+};
+
+const TacticalLocationPanel: React.FC = () => {
+  return (
+    <div className="group relative overflow-hidden border border-retro-green/25 bg-[#061106]/95 p-3 md:p-4 hover:animate-[flicker_0.24s_steps(2,end)_3]">
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(51,255,51,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(51,255,51,0.045)_1px,transparent_1px)] bg-[size:24px_24px] opacity-70" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(51,255,51,0.12),transparent_62%)] opacity-80" />
+      <div className="absolute inset-x-0 top-0 h-px bg-retro-green/60" />
+
+      <div className="relative z-10 mb-3 flex items-start justify-between gap-4">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-retro-amber">Current Location</div>
+          <div className="mt-1 text-base md:text-lg font-bold text-retro-green">Bangkok, Thailand</div>
+        </div>
+        <div className="text-right text-[10px] uppercase tracking-[0.2em] text-retro-green/70">
+          <div>Node Active</div>
+          <div>GMT+7</div>
+        </div>
+      </div>
+
+      <div className="relative z-10 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px] items-start">
+        <div className="relative overflow-hidden border border-retro-green/20 bg-black/40 p-2 h-[190px]">
+          <div className="absolute inset-0 opacity-35 pointer-events-none">
+            <div className="absolute inset-x-0 top-[20%] border-t border-retro-green/20" />
+            <div className="absolute inset-x-0 top-[40%] border-t border-retro-green/20" />
+            <div className="absolute inset-x-0 top-[60%] border-t border-retro-green/20" />
+            <div className="absolute inset-x-0 top-[80%] border-t border-retro-green/20" />
+            <div className="absolute inset-y-0 left-[20%] border-l border-retro-green/20" />
+            <div className="absolute inset-y-0 left-[40%] border-l border-retro-green/20" />
+            <div className="absolute inset-y-0 left-[60%] border-l border-retro-green/20" />
+            <div className="absolute inset-y-0 left-[80%] border-l border-retro-green/20" />
+          </div>
+
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="relative h-40 w-40 rounded-full border border-retro-green/20">
+              <div className="absolute inset-3 rounded-full border border-retro-green/20" />
+              <div className="absolute inset-7 rounded-full border border-retro-green/25" />
+              <div className="absolute inset-1/2 h-px w-full -translate-x-1/2 -translate-y-1/2 bg-retro-green/20" />
+              <div className="absolute inset-1/2 h-full w-px -translate-x-1/2 -translate-y-1/2 bg-retro-green/20" />
+              <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_220deg,transparent_0deg,rgba(51,255,51,0.03)_80deg,rgba(51,255,51,0.22)_98deg,transparent_112deg,transparent_360deg)] animate-[spin_9s_linear_infinite]" />
+              <div className="absolute left-[63%] top-[41%] h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-retro-green shadow-[0_0_12px_rgba(51,255,51,0.95)]" />
+              <div className="absolute left-[63%] top-[41%] h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border border-retro-green/45 animate-ping" />
+            </div>
+          </div>
+
+          <div className="relative z-10 h-full flex flex-col items-center justify-center gap-3">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-retro-green/70">Target Lock</div>
+            <div className="mt-3 text-xl md:text-2xl font-bold uppercase tracking-[0.18em] text-retro-green">Bangkok</div>
+            <div className="text-[10px] uppercase tracking-[0.24em] text-retro-amber">Thailand / GMT+7</div>
+          </div>
+        </div>
+
+        <div className="space-y-3 text-[10px] uppercase tracking-[0.22em]">
+          <div className="border border-retro-green/20 bg-retro-green/8 px-3 py-2">
+            <div className="text-retro-amber mb-1">Sector</div>
+            <div className="text-retro-green">Southeast Asia</div>
+          </div>
+          <div className="border border-retro-green/20 bg-black/35 px-3 py-2">
+            <div className="text-retro-amber mb-1">Signal</div>
+            <div className="text-retro-green">Uplink Stable</div>
+          </div>
+          <div className="border border-retro-green/20 bg-black/35 px-3 py-2">
+            <div className="text-retro-amber mb-1">Status</div>
+            <div className="text-retro-green">Operational</div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -280,13 +349,13 @@ export const Desktop: React.FC = () => {
         onFocus={() => setActiveWindow('about')}
       >
         <div className="flex flex-col gap-8">
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
             {/* Stylized Photo */}
             <motion.div 
               initial={{ opacity: 0, x: -50, rotateY: 90 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-              className="relative w-full max-w-[280px] mx-auto md:mx-0 md:w-64 aspect-[5/4] md:aspect-square shrink-0 group"
+              className="relative w-full max-w-[280px] md:max-w-[340px] mx-auto lg:mx-0 lg:w-64 aspect-[5/4] lg:aspect-square shrink-0 group"
             >
               <div className="absolute inset-0 bg-red-600/20 blur-xl group-hover:bg-red-600/40 transition-colors duration-500" />
               <div className="relative w-full h-full border-2 border-red-600 overflow-hidden bg-[#111] grayscale contrast-125 brightness-90 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700">
@@ -296,7 +365,7 @@ export const Desktop: React.FC = () => {
                   className="w-full h-full object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-red-600/20 to-transparent opacity-50" />
-                <div className="absolute top-0 left-0 w-full h-1 bg-red-600/50 animate-[scanline_4s_linear_infinite]" />
+                <div className="absolute top-0 left-0 w-full h-px bg-red-600/35" />
               </div>
               <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-red-500" />
               <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-red-500" />
@@ -308,12 +377,12 @@ export const Desktop: React.FC = () => {
             </h2>
             <div className="space-y-4 text-sm md:text-base leading-relaxed">
               <p className="text-retro-green font-bold text-lg md:text-xl tracking-tight">
-                Product engineer with deep production leadership and hands-on delivery skills.
+                Senior Production Leader with hands-on product engineering experience.
               </p>
               <p className="text-retro-green/90">
-                I combine large-scale production leadership with hands-on product development. My background
-                lets me move comfortably between strategy, team management, architecture, and direct
-                implementation across web, mobile, backend, and launch execution.
+                I combine large-scale production leadership with direct product development. My background allows
+                me to move confidently between strategy, delivery, team management, architecture, and hands-on
+                implementation across web, mobile, and backend products.
               </p>
               <div className="space-y-3 border-l-2 border-red-600/50 pl-3 md:pl-4 py-1 bg-red-600/5">
                 <div>
@@ -327,22 +396,24 @@ export const Desktop: React.FC = () => {
                     >
                       Thai Tone Lab
                     </a>{' '}
-                    — a full-cycle mobile product I am designing and building myself with
-                    <span className="text-retro-amber"> Expo, React Native, React Native Paper</span> and a
-                    <span className="text-retro-amber"> Python backend</span> for tonal analysis.
+                    — a full-cycle mobile product I am designing and building with
+                    <span className="text-retro-amber"> Expo, React Native, React Native Paper</span>,
+                    <span className="text-retro-amber"> Python</span>, and product-first delivery discipline.
                   </p>
                 </div>
                 <div>
                   <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Execution_Model:</span>
                   <p className="text-xs md:text-sm">
-                    I bring both sides of the equation: strong delivery leadership and the ability to sit down
-                    and build the product myself. That means fewer gaps between idea, execution, and release.
+                    I bring both sides of the equation: strong delivery leadership and the ability to step
+                    directly into execution. That means fewer gaps between idea, team alignment,
+                    implementation, and release.
                   </p>
                 </div>
                 <div>
                   <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Recent_Shipped_Work:</span>
                   <p className="text-xs md:text-sm">
-                    I recently designed and developed this portfolio experience as well. More live code and product work:
+                    I recently designed and developed this portfolio experience as well. More live code and product work
+                    is available on:
                     {' '}
                     <a
                       href={githubProfileUrl}
@@ -368,6 +439,8 @@ export const Desktop: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <TacticalLocationPanel />
 
         <div className="space-y-6">
             <h3 className="text-retro-amber border-b border-retro-amber/30 pb-1 uppercase tracking-widest">Experience_Log:</h3>
@@ -396,22 +469,22 @@ export const Desktop: React.FC = () => {
                 <h4 className="text-retro-green font-bold">VMLY&R (MA) · Digital Production Manager</h4>
                 <span className="text-[10px] opacity-50">Aug 2021 – Apr 2023</span>
               </div>
-              <p className="text-xs opacity-80 italic">American communication group (Russia operations until 2023)</p>
+              <p className="text-xs opacity-80 italic">American communications group</p>
               <div className="pl-4 border-l border-retro-green/30 space-y-3 mt-2">
                 <div>
                   <p className="text-xs font-bold text-retro-amber underline">British American Tobacco (Lucky Strike):</p>
                   <ul className="text-[11px] list-disc list-inside opacity-70 mt-1">
-                    <li>Managed cross-functional team (Art, Creative, Dev, Account) for Luckystrike.ru portal launch.</li>
-                    <li>Executed promotional activities and special projects using SCRUM/Kanban.</li>
-                    <li>Developed custom digital assets and sticker packs.</li>
+                    <li>Led cross-functional teams across creative, account, design, and development.</li>
+                    <li>Owned delivery of high-visibility digital launches and campaign systems.</li>
+                    <li>Managed complex execution for brands including British American Tobacco and Aperol Spritz.</li>
                   </ul>
                 </div>
                 <div>
                   <p className="text-xs font-bold text-retro-amber underline">Aperol Spritz:</p>
                   <ul className="text-[11px] list-disc list-inside opacity-70 mt-1">
-                    <li>Launched MS Dynamics in Russia (152-FZ compliance).</li>
-                    <li>Integrated chatbots with QR codes and receipt promotions.</li>
-                    <li>Managed off-trade/on-trade campaigns with artist Leshay Svik.</li>
+                    <li>Coordinated platform, CRM, and campaign delivery in regulated market conditions.</li>
+                    <li>Aligned stakeholders, production timelines, and vendor execution across multiple workstreams.</li>
+                    <li>Maintained launch quality under tight deadlines and operational complexity.</li>
                   </ul>
                 </div>
               </div>
@@ -425,13 +498,10 @@ export const Desktop: React.FC = () => {
               </div>
               <p className="text-xs opacity-80 italic">Global network advertising agency (Vizeum Health)</p>
               <div className="pl-4 border-l border-retro-green/30 space-y-2 mt-2">
-                <p className="text-[11px] opacity-70">
-                  Managed the entire digital production department for pharmaceutical market clients.
-                </p>
                 <ul className="text-[11px] list-disc list-inside opacity-70">
-                  <li>Resource management: designers, web developers, and creative teams.</li>
-                  <li>Contractor selection, negotiation, and legal/media buying coordination.</li>
-                  <li>End-to-end delivery of websites, landing pages, banners, and video assets.</li>
+                  <li>Led the digital production function for pharmaceutical and brand clients.</li>
+                  <li>Managed teams, vendors, timelines, and delivery quality across multiple parallel streams.</li>
+                  <li>Oversaw websites, landing pages, banners, and campaign assets from planning to release.</li>
                 </ul>
               </div>
             </div>
@@ -492,14 +562,14 @@ export const Desktop: React.FC = () => {
             {[
               { 
                 name: 'Thai Tone Lab', 
-                desc: 'A mobile product for tonal analysis designed and built by me from product concept to implementation.', 
+                desc: 'A mobile product for tonal analysis designed and built from concept to implementation.', 
                 tech: 'Expo, React Native, RN Paper, Python',
                 link: thaiToneLabUrl,
                 badge: 'GITHUB',
               },
               { 
                 name: 'Free-Torrents.org', 
-                desc: 'Legendary torrent community. Customized phpBB & server-side torrent systems.', 
+                desc: 'Large-scale community platform and infrastructure project with deep customization, operational complexity, and long-term system ownership.', 
                 tech: 'phpBB, Infrastructure, Server-Side',
                 link: freeTorrentsWikiUrl,
                 badge: 'WIKI',
@@ -559,7 +629,7 @@ export const Desktop: React.FC = () => {
           <div>
             <h3 className="text-retro-amber mb-3">FRONTEND_STACK:</h3>
             <div className="flex flex-wrap gap-2">
-              {['React', 'TypeScript', 'Tailwind', 'Motion', 'Three.js', 'Next.js'].map(s => (
+              {['React', 'React Native', 'React Native Paper', 'TypeScript', 'Tailwind', 'Motion', 'Next.js'].map(s => (
                 <span key={s} className="px-2 py-1 bg-retro-green/10 border border-retro-green/30 text-retro-green text-[10px]">{s}</span>
               ))}
             </div>
@@ -590,7 +660,7 @@ export const Desktop: React.FC = () => {
         maxWidth="md:max-w-md"
       >
         <div className="flex flex-col gap-3 md:gap-4">
-          <p className="text-[10px] md:text-sm opacity-80 shrink-0">Ready to build something legendary?</p>
+          <p className="text-[10px] md:text-sm opacity-80 shrink-0">Open to senior production leadership and product delivery opportunities.</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto pr-1 custom-scrollbar content-start">
             <div className="flex items-center gap-2 md:gap-3 min-h-20 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">

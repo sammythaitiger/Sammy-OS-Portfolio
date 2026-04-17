@@ -23,7 +23,7 @@ export const MonitorFrame: React.FC<MonitorFrameProps> = ({ children }) => {
           </div>
 
           {/* The Actual Screen Content */}
-          <div className="relative flex-1 overflow-hidden bg-retro-bg crt-flicker">
+          <div className="relative flex-1 overflow-hidden bg-retro-bg">
             {children}
             
             {/* Screen Effects */}
