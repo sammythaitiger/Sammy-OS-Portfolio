@@ -106,3 +106,63 @@
   );
   animation: scanline 8s linear infinite;
 }
+
+/* Premium red — metallic gradient with slow shimmer sweep */
+.text-lux-red {
+  background: linear-gradient(
+    100deg,
+    #5a0000 0%,
+    #c8102e 22%,
+    #ff2a3a 42%,
+    #ffb3b3 50%,
+    #ff2a3a 58%,
+    #c8102e 78%,
+    #5a0000 100%
+  );
+  background-size: 240% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: lux-shimmer 6s ease-in-out infinite;
+  filter: drop-shadow(0 0 1px rgba(255, 42, 58, 0.55))
+          drop-shadow(0 0 14px rgba(255, 0, 50, 0.18));
+}
+
+@keyframes lux-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Chromatic aberration — subtle by default, amplified on hover */
+.text-aberration {
+  text-shadow:
+    -0.4px 0 0 rgba(0, 229, 255, 0.45),
+    0.4px 0 0 rgba(255, 0, 128, 0.45);
+  transition: text-shadow 320ms ease;
+}
+
+.text-aberration:hover,
+.group:hover .text-aberration {
+  text-shadow:
+    -1.6px 0 0 rgba(0, 229, 255, 0.85),
+    1.6px 0 0 rgba(255, 0, 128, 0.85),
+    0 0 12px rgba(255, 0, 60, 0.35);
+  animation: aberration-jitter 1.8s steps(1) infinite;
+}
+
+@keyframes aberration-jitter {
+  0%, 92%, 100% { transform: translate3d(0, 0, 0); }
+  93% { transform: translate3d(-1px, 0, 0); }
+  95% { transform: translate3d(1px, 0, 0); }
+  97% { transform: translate3d(0, -1px, 0); }
+}
+
+/* Tight + wide red glow for depth on headings */
+.text-neon-red {
+  text-shadow:
+    0 0 1px rgba(255, 60, 80, 0.9),
+    0 0 10px rgba(255, 0, 50, 0.45),
+    0 0 24px rgba(255, 0, 50, 0.2);
+}

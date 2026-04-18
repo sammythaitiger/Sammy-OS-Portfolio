@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Folder, User, Code, Mail, X, Minus, Square } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { ScrambleText } from '@/src/components/ScrambleText';
 
 const aboutPhotoSrc = '/images/about-samir.jpg';
 const luckyStrikeScreenshots = [
@@ -82,6 +83,9 @@ interface WindowProps {
   maxWidth?: string;
 }
 
+const WINDOW_INSET = 12;
+const TASKBAR_HEIGHT = 40;
+
 const Window: React.FC<WindowProps> = ({
   id,
   title,
@@ -100,7 +104,7 @@ const Window: React.FC<WindowProps> = ({
   desktopRef,
   isDesktop,
   supportsWindowChrome,
-  maxWidth = "max-w-4xl",
+  maxWidth = "56rem",
 }) => {
   const dragControls = useDragControls();
   const windowRef = useRef<HTMLDivElement>(null);
@@ -113,19 +117,25 @@ const Window: React.FC<WindowProps> = ({
       return nextPosition;
     }
 
-    const inset = 12;
-    const taskbarHeight = 40;
-    const maxX = Math.max(inset, desktopNode.clientWidth - windowNode.offsetWidth - inset);
-    const maxY = Math.max(inset, desktopNode.clientHeight - windowNode.offsetHeight - taskbarHeight - inset);
+    const maxX = Math.max(WINDOW_INSET, desktopNode.clientWidth - windowNode.offsetWidth - WINDOW_INSET);
+    const maxY = Math.max(WINDOW_INSET, desktopNode.clientHeight - windowNode.offsetHeight - TASKBAR_HEIGHT - WINDOW_INSET);
 
     return {
-      x: Math.min(Math.max(inset, nextPosition.x), maxX),
-      y: Math.min(Math.max(inset, nextPosition.y), maxY),
+      x: Math.min(Math.max(WINDOW_INSET, nextPosition.x), maxX),
+      y: Math.min(Math.max(WINDOW_INSET, nextPosition.y), maxY),
     };
   };
 
-  const maxWindowHeightStyle = supportsWindowChrome
-    ? { maxHeight: isMaximized ? 'calc(100svh - 40px)' : 'calc(100svh - 72px)' }
+  // Clamp size to the remaining space from the window's top-left corner.
+  // Without this, a window positioned mid-viewport can extend past the taskbar
+  // or right edge, and the user has to drag the window to reach hidden content.
+  const boundedSizeStyle = supportsWindowChrome
+    ? isMaximized
+      ? { maxHeight: `calc(100% - ${TASKBAR_HEIGHT}px)` }
+      : {
+          maxWidth: `min(${maxWidth}, calc(100% - ${position.x + WINDOW_INSET}px))`,
+          maxHeight: `calc(100% - ${position.y + TASKBAR_HEIGHT + WINDOW_INSET}px)`,
+        }
     : undefined;
 
   return (
@@ -154,15 +164,14 @@ const Window: React.FC<WindowProps> = ({
               ? "absolute border-2 rounded-sm"
               : "fixed inset-x-0 top-0 bottom-10 w-full border-0 rounded-t-xl",
             supportsWindowChrome && isMaximized && "inset-x-0 top-0 bottom-10 w-auto h-auto",
-            supportsWindowChrome && !isMaximized && "w-[92%] max-h-[85%]",
+            supportsWindowChrome && !isMaximized && "w-[92%]",
             isDesktop && !isMaximized && "cursor-move",
-            maxWidth
           )}
           style={
             supportsWindowChrome
               ? isMaximized
-                ? { zIndex, left: 0, top: 0, right: 0, bottom: 40, ...maxWindowHeightStyle }
-                : { zIndex, left: position.x, top: position.y, ...maxWindowHeightStyle }
+                ? { zIndex, left: 0, top: 0, right: 0, bottom: TASKBAR_HEIGHT, ...boundedSizeStyle }
+                : { zIndex, left: position.x, top: position.y, ...boundedSizeStyle }
               : { zIndex }
           }
         >
@@ -256,16 +265,16 @@ const GlitchText: React.FC = () => {
   return (
     <div className="relative pointer-events-none select-none flex flex-col items-center justify-center w-full max-w-full px-4 text-center">
       <div className="relative w-full flex justify-center">
-        {/* Main Text with stronger glow */}
-        <div className="text-4xl sm:text-5xl md:text-8xl font-black text-red-500/50 tracking-tighter uppercase relative z-10 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)] break-words w-full">
-          Samir Akhmedoff
+        {/* Main Text — metallic gradient + shimmer */}
+        <div className="text-lux-red text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter uppercase relative z-10 break-words w-full">
+          <ScrambleText text="Samir Akhmedoff" duration={1400} />
         </div>
-        
-        {/* Glitch layers */}
+
+        {/* Chromatic aberration ghosts */}
         <motion.div
           animate={{
-            opacity: [0, 0, 0.7, 0, 0.9, 0, 0],
-            x: [0, -8, 8, -4, 0, 4, 0],
+            opacity: [0.35, 0.35, 0.75, 0.35, 0.9, 0.35, 0.35],
+            x: [-2, -2, -9, -3, -2, -4, -2],
             skewX: [0, 15, -15, 0, 8, 0, 0],
           }}
           transition={{
@@ -273,32 +282,32 @@ const GlitchText: React.FC = () => {
             repeat: Infinity,
             times: [0, 0.1, 0.12, 0.14, 0.16, 0.18, 1],
           }}
-          className="absolute inset-0 text-4xl sm:text-5xl md:text-8xl font-black text-red-400 tracking-tighter uppercase blur-[0.5px] z-0 flex justify-center w-full"
+          className="absolute inset-0 text-4xl sm:text-5xl md:text-8xl font-black text-[#00e5ff] tracking-tighter uppercase blur-[0.5px] z-0 flex justify-center w-full mix-blend-screen"
         >
           Samir Akhmedoff
         </motion.div>
-        
+
         <motion.div
           animate={{
-            opacity: [0, 0.6, 0, 0.8, 0, 0],
-            x: [0, 8, -8, 4, 0, 0],
+            opacity: [0.35, 0.7, 0.35, 0.85, 0.35, 0.35],
+            x: [2, 9, 2, 5, 2, 2],
           }}
           transition={{
             duration: 4,
             repeat: Infinity,
             times: [0, 0.2, 0.22, 0.24, 0.26, 1],
-            delay: 1
+            delay: 1,
           }}
-          className="absolute inset-0 text-4xl sm:text-5xl md:text-8xl font-black text-blue-400 tracking-tighter uppercase blur-[0.5px] z-0 flex justify-center w-full"
+          className="absolute inset-0 text-4xl sm:text-5xl md:text-8xl font-black text-[#ff0080] tracking-tighter uppercase blur-[0.5px] z-0 flex justify-center w-full mix-blend-screen"
         >
           Samir Akhmedoff
         </motion.div>
       </div>
-      
-      <motion.div 
-        animate={{ opacity: [0.4, 0.8, 0.4] }}
+
+      <motion.div
+        animate={{ opacity: [0.7, 1, 0.7] }}
         transition={{ duration: 4, repeat: Infinity }}
-        className="text-sm sm:text-base md:text-2xl font-mono text-red-500/60 mt-2 md:mt-4 tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.6em] uppercase drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]"
+        className="text-lux-red text-aberration text-sm sm:text-base md:text-2xl font-mono mt-2 md:mt-4 tracking-[0.1em] sm:tracking-[0.2em] md:tracking-[0.6em] uppercase"
       >
         Senior Production Leader
       </motion.div>
@@ -695,8 +704,18 @@ export const Desktop: React.FC = () => {
             </motion.div>
 
           <div className="space-y-4 flex-1 min-w-0">
-            <h2 className="text-xl md:text-2xl text-red-500 border-b border-red-900/30 pb-2 flex items-center gap-2 font-black">
-              <span className="animate-pulse">●</span> SYSTEM_ARCHITECT: SAMIR_AKHMEDOFF
+            <h2
+              className="group text-xl md:text-2xl border-b border-red-900/30 pb-2 flex items-center gap-2 font-black tracking-[0.02em] cursor-default"
+              title="SYSTEM_ARCHITECT: SAMIR_AKHMEDOFF"
+            >
+              <span className="animate-pulse text-red-500 text-neon-red">●</span>
+              <span className="text-lux-red text-aberration">
+                <ScrambleText
+                  text="SYSTEM_ARCHITECT: SAMIR_AKHMEDOFF"
+                  duration={1100}
+                  trigger={windows.about.isOpen}
+                />
+              </span>
             </h2>
             <div className="space-y-4 text-sm md:text-base leading-relaxed">
               <p className="text-retro-green font-bold text-lg md:text-xl tracking-tight">
@@ -709,7 +728,7 @@ export const Desktop: React.FC = () => {
               </p>
               <div className="space-y-3 border-l-2 border-red-600/50 pl-3 md:pl-4 py-1 bg-red-600/5">
                 <div>
-                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Current_Focus:</span>
+                  <span className="text-lux-red text-aberration font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Current_Focus:</span>
                   <p className="text-xs md:text-sm">
                     <a
                       href={thaiToneLabUrl}
@@ -725,7 +744,7 @@ export const Desktop: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Execution_Model:</span>
+                  <span className="text-lux-red text-aberration font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Execution_Model:</span>
                   <p className="text-xs md:text-sm">
                     I bring both sides of the equation: strong delivery leadership and the ability to step
                     directly into execution. That means fewer gaps between idea, team alignment,
@@ -733,7 +752,7 @@ export const Desktop: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <span className="text-red-500 font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Recent_Shipped_Work:</span>
+                  <span className="text-lux-red text-aberration font-black uppercase text-[10px] tracking-[0.2em] block mb-1">Recent_Shipped_Work:</span>
                   <p className="text-xs md:text-sm">
                     I recently designed and developed this portfolio experience as well. More live code and product work
                     is available on:
@@ -754,8 +773,8 @@ export const Desktop: React.FC = () => {
                   <span className="text-retro-amber block mb-1 uppercase tracking-widest font-bold">Strength:</span>
                   Strategy + Execution
                 </div>
-                <div className="p-3 border border-red-900/20 bg-red-900/5 flex flex-col justify-center">
-                  <span className="text-red-500 block mb-1 uppercase tracking-widest font-bold">Range:</span>
+                <div className="p-3 border border-red-900/20 bg-red-900/5 flex flex-col justify-center group">
+                  <span className="text-lux-red text-aberration block mb-1 uppercase tracking-widest font-bold">Range:</span>
                   Team Leadership + Hands-On Build
                 </div>
               </div>
@@ -1010,7 +1029,7 @@ export const Desktop: React.FC = () => {
         desktopRef={desktopRef}
         isDesktop={isDesktop}
         supportsWindowChrome={supportsWindowChrome}
-        maxWidth="md:max-w-md"
+        maxWidth="32rem"
       >
         <div className="flex flex-col gap-3 md:gap-4">
           {contactStatus === 'success' ? (
@@ -1051,14 +1070,14 @@ export const Desktop: React.FC = () => {
                   onChange={(event) => setContactMessage(event.target.value)}
                   placeholder="Type your message here..."
                   onPointerDownCapture={(event) => event.stopPropagation()}
-                  className="w-full min-h-20 md:min-h-24 resize-none rounded-sm border border-white/10 bg-black/40 px-3 py-3 font-mono text-[11px] md:text-sm text-retro-green placeholder:text-white/25 outline-none transition-colors focus:border-retro-green/50 focus:bg-black/55"
+                  className="w-full min-h-36 md:min-h-28 resize-none rounded-sm border border-white/10 bg-black/40 px-3 py-3 font-mono text-sm md:text-sm text-retro-green placeholder:text-white/25 outline-none transition-colors focus:border-retro-green/50 focus:bg-black/55"
                 />
                 {contactError ? (
                   <p className="text-[10px] md:text-xs text-red-400 uppercase tracking-[0.2em]">{contactError}</p>
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto pr-1 custom-scrollbar content-start">
+              <div className="grid grid-cols-1 gap-2 content-start">
                 <a
                   href="mailto:samuelaroundtheworld@gmail.com"
                   onPointerDownCapture={(event) => event.stopPropagation()}
