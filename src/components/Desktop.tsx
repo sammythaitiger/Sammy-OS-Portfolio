@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Folder, User, Code, Mail, X, Minus, Square } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 
@@ -12,6 +12,7 @@ const luckyStrikeScreenshots = [
 const githubProfileUrl = 'https://github.com/sammythaitiger';
 const thaiToneLabUrl = 'https://github.com/sammythaitiger/ThaiTone-Lab';
 const freeTorrentsWikiUrl = 'https://ru.wikipedia.org/wiki/Free-Torrents.org';
+const contactApiUrl = ((import.meta as ImportMeta & { env?: { VITE_CONTACT_API_URL?: string } }).env?.VITE_CONTACT_API_URL) ?? '/api/contact';
 
 const MatrixBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,7 +45,7 @@ const MatrixBackground: React.FC = () => {
 
       for (let i = 0; i < drops.length; i++) {
         const text = characters.charAt(Math.floor(Math.random() * characters.length));
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);    
 
         if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
           drops[i] = 0;
@@ -61,45 +62,155 @@ const MatrixBackground: React.FC = () => {
 };
 
 interface WindowProps {
+  id: string;
   title: string;
   icon: React.ReactNode;
   isOpen: boolean;
+  isMinimized: boolean;
+  isMaximized: boolean;
   onClose: () => void;
+  onMinimize: () => void;
+  onMaximize: () => void;
   children: React.ReactNode;
   zIndex: number;
   onFocus: () => void;
+  position: { x: number; y: number };
+  onPositionChange: (position: { x: number; y: number }) => void;
+  desktopRef: React.RefObject<HTMLDivElement | null>;
+  isDesktop: boolean;
+  supportsWindowChrome: boolean;
   maxWidth?: string;
 }
 
-const Window: React.FC<WindowProps> = ({ title, icon, isOpen, onClose, children, zIndex, onFocus, maxWidth = "max-w-4xl" }) => {
+const Window: React.FC<WindowProps> = ({
+  id,
+  title,
+  icon,
+  isOpen,
+  isMinimized,
+  isMaximized,
+  onClose,
+  onMinimize,
+  onMaximize,
+  children,
+  zIndex,
+  onFocus,
+  position,
+  onPositionChange,
+  desktopRef,
+  isDesktop,
+  supportsWindowChrome,
+  maxWidth = "max-w-4xl",
+}) => {
+  const dragControls = useDragControls();
+  const windowRef = useRef<HTMLDivElement>(null);
+
+  const clampIntoViewport = (nextPosition: { x: number; y: number }) => {
+    const desktopNode = desktopRef.current;
+    const windowNode = windowRef.current;
+
+    if (!desktopNode || !windowNode) {
+      return nextPosition;
+    }
+
+    const inset = 12;
+    const taskbarHeight = 40;
+    const maxX = Math.max(inset, desktopNode.clientWidth - windowNode.offsetWidth - inset);
+    const maxY = Math.max(inset, desktopNode.clientHeight - windowNode.offsetHeight - taskbarHeight - inset);
+
+    return {
+      x: Math.min(Math.max(inset, nextPosition.x), maxX),
+      y: Math.min(Math.max(inset, nextPosition.y), maxY),
+    };
+  };
+
+  const maxWindowHeightStyle = supportsWindowChrome
+    ? { maxHeight: isMaximized ? 'calc(100svh - 40px)' : 'calc(100svh - 72px)' }
+    : undefined;
+
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && !isMinimized && (
         <motion.div
+          key={`${id}-${isMaximized ? 'max' : 'window'}`}
+          ref={windowRef}
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          style={{ zIndex }}
+          drag={isDesktop && !isMaximized}
+          dragControls={dragControls}
+          dragListener={isDesktop && !isMaximized}
+          dragMomentum={false}
+          onDragEnd={(_, info) => {
+            onPositionChange(clampIntoViewport({
+              x: position.x + info.offset.x,
+              y: position.y + info.offset.y,
+            }));
+          }}
           onMouseDown={onFocus}
           className={cn(
-            "fixed inset-x-0 top-0 bottom-10 md:absolute md:inset-auto md:top-[48%] md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[92%] md:h-auto md:max-h-[85%] bg-[#1a1a1a] border-0 md:border-2 border-[#333] shadow-2xl flex flex-col rounded-t-xl md:rounded-sm overflow-hidden z-40",
+            "bg-[#1a1a1a] border-[#333] shadow-2xl flex flex-col overflow-hidden z-40",
+            supportsWindowChrome
+              ? "absolute border-2 rounded-sm"
+              : "fixed inset-x-0 top-0 bottom-10 w-full border-0 rounded-t-xl",
+            supportsWindowChrome && isMaximized && "inset-x-0 top-0 bottom-10 w-auto h-auto",
+            supportsWindowChrome && !isMaximized && "w-[92%] max-h-[85%]",
+            isDesktop && !isMaximized && "cursor-move",
             maxWidth
           )}
+          style={
+            supportsWindowChrome
+              ? isMaximized
+                ? { zIndex, left: 0, top: 0, right: 0, bottom: 40, ...maxWindowHeightStyle }
+                : { zIndex, left: position.x, top: position.y, ...maxWindowHeightStyle }
+              : { zIndex }
+          }
         >
           {/* Title Bar */}
-          <div className="bg-[#222] md:bg-[#333] p-3 md:p-2 flex items-center justify-between select-none border-b border-[#333] shrink-0">
+          <div
+            onPointerDown={(event) => {
+              onFocus();
+            }}
+            onDoubleClick={() => {
+              if (supportsWindowChrome) {
+                onMaximize();
+              }
+            }}
+            className={cn(
+              "bg-[#222] md:bg-[#333] p-3 md:p-2 flex items-center justify-between select-none border-b border-[#333] shrink-0",
+              isDesktop && !isMaximized && "cursor-move"
+            )}
+          >
             <div className="flex items-center gap-2">
               <span className="text-retro-green">{icon}</span>
               <span className="text-[10px] md:text-xs font-mono font-bold uppercase tracking-wider truncate max-w-[150px] md:max-w-none">{title}</span>
             </div>
             <div className="flex gap-3 md:gap-2">
-              <button className="hidden md:block hover:bg-[#444] p-1 rounded-sm transition-colors">
+              <button
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMinimize();
+                }}
+                className="hidden md:block hover:bg-[#444] p-1 rounded-sm transition-colors"
+              >
                 <Minus size={14} />
               </button>
-              <button className="hidden md:block hover:bg-[#444] p-1 rounded-sm transition-colors">
+              <button
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMaximize();
+                }}
+                className={cn(
+                  "hidden md:block p-1 rounded-sm transition-colors",
+                  isMaximized ? "bg-[#444] text-white" : "hover:bg-[#444]"
+                )}
+              >
                 <Square size={14} />
               </button>
               <button 
+                onPointerDown={(event) => event.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); onClose(); }}
                 className="hover:bg-red-500 p-1.5 md:p-1 rounded-sm transition-colors"
               >
@@ -116,6 +227,29 @@ const Window: React.FC<WindowProps> = ({ title, icon, isOpen, onClose, children,
       )}
     </AnimatePresence>
   );
+};
+
+type WindowId = 'about' | 'projects' | 'skills' | 'contact';
+
+interface WindowRuntimeState {
+  isOpen: boolean;
+  isMinimized: boolean;
+  isMaximized: boolean;
+  position: { x: number; y: number };
+}
+
+const defaultWindowRuntimeState: Record<WindowId, WindowRuntimeState> = {
+  about: { isOpen: false, isMinimized: false, isMaximized: false, position: { x: 88, y: 48 } },
+  projects: { isOpen: false, isMinimized: false, isMaximized: false, position: { x: 120, y: 72 } },
+  skills: { isOpen: false, isMinimized: false, isMaximized: false, position: { x: 152, y: 96 } },
+  contact: { isOpen: false, isMinimized: false, isMaximized: false, position: { x: 184, y: 120 } },
+};
+
+const windowCascadeOrder: Record<WindowId, number> = {
+  about: 0,
+  projects: 1,
+  skills: 2,
+  contact: 3,
 };
 
 const GlitchText: React.FC = () => {
@@ -282,26 +416,205 @@ const TacticalLocationPanel: React.FC = () => {
 };
 
 export const Desktop: React.FC = () => {
-  const [openWindows, setOpenWindows] = useState<string[]>([]);
-  const [activeWindow, setActiveWindow] = useState<string | null>(null);
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const [windows, setWindows] = useState<Record<WindowId, WindowRuntimeState>>(defaultWindowRuntimeState);
+  const [windowOrder, setWindowOrder] = useState<WindowId[]>([]);
+  const [activeWindow, setActiveWindow] = useState<WindowId | null>(null);
   const [clippyVisible, setClippyVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [viewportMode, setViewportMode] = useState<'mobile' | 'compact' | 'desktop'>('mobile');
+  const isDesktop = viewportMode === 'desktop';
+  const supportsWindowChrome = viewportMode !== 'mobile';
 
-  const toggleWindow = (id: string) => {
-    if (openWindows.includes(id)) {
-      setActiveWindow(id);
+  useEffect(() => {
+    const updateViewport = () => {
+      if (window.innerWidth >= 1280) {
+        setViewportMode('desktop');
+        return;
+      }
+
+      if (window.innerWidth >= 768) {
+        setViewportMode('compact');
+        return;
+      }
+
+      setViewportMode('mobile');
+    };
+
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
+
+  const bringToFront = (id: WindowId) => {
+    setWindowOrder((current) => [...current.filter((item) => item !== id), id]);
+    setActiveWindow(id);
+  };
+
+  const getInitialWindowPosition = (id: WindowId) => {
+    if (!supportsWindowChrome) {
+      return defaultWindowRuntimeState[id].position;
+    }
+
+    const desktopNode = desktopRef.current;
+
+    if (!desktopNode) {
+      return defaultWindowRuntimeState[id].position;
+    }
+
+    const inset = 16;
+    const taskbarHeight = 40;
+    const cascadeOffset = viewportMode === 'desktop' ? 24 : 16;
+    const cascadeIndex = windowCascadeOrder[id];
+    const usableWidth = desktopNode.clientWidth;
+    const usableHeight = desktopNode.clientHeight - taskbarHeight;
+    const estimatedWidth = id === 'contact'
+      ? Math.min(560, usableWidth - inset * 2)
+      : Math.min(1100, Math.max(usableWidth * 0.82, 760));
+    const estimatedHeight = id === 'contact'
+      ? Math.min(560, Math.max(usableHeight * 0.72, 480))
+      : Math.min(760, Math.max(usableHeight * 0.78, 520));
+    const maxX = Math.max(inset, usableWidth - estimatedWidth - inset);
+    const maxY = Math.max(inset, usableHeight - estimatedHeight - inset);
+    const centeredX = (usableWidth - estimatedWidth) / 2;
+    const centeredY = (usableHeight - estimatedHeight) / 2;
+
+    return {
+      x: Math.min(Math.max(inset, centeredX + cascadeIndex * cascadeOffset), maxX),
+      y: Math.min(Math.max(inset, centeredY + cascadeIndex * cascadeOffset), maxY),
+    };
+  };
+
+  const toggleWindow = (id: WindowId) => {
+    setWindows((current) => {
+      const shouldResetPosition = !current[id].isOpen;
+
+      return {
+        ...current,
+        [id]: {
+          ...current[id],
+          isOpen: true,
+          isMinimized: false,
+          position: shouldResetPosition ? getInitialWindowPosition(id) : current[id].position,
+        },
+      };
+    });
+
+    if (supportsWindowChrome) {
+      bringToFront(id);
     } else {
-      setOpenWindows([...openWindows, id]);
+      setWindowOrder([id]);
       setActiveWindow(id);
     }
   };
 
-  const closeWindow = (id: string) => {
-    setOpenWindows(openWindows.filter(w => w !== id));
-    if (activeWindow === id) setActiveWindow(null);
+  const closeWindow = (id: WindowId) => {
+    setWindows((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        isOpen: false,
+        isMinimized: false,
+        isMaximized: false,
+      },
+    }));
+    setWindowOrder((current) => current.filter((item) => item !== id));
+    setActiveWindow((current) => (current === id ? null : current));
+
+    if (id === 'contact') {
+      setContactMessage('');
+      setContactStatus('idle');
+      setContactError(null);
+    }
   };
 
-  const icons = [
+  const minimizeWindow = (id: WindowId) => {
+    setWindows((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        isMinimized: true,
+      },
+    }));
+    setActiveWindow((current) => (current === id ? null : current));
+  };
+
+  const maximizeWindow = (id: WindowId) => {
+    if (!supportsWindowChrome) {
+      return;
+    }
+
+    setWindows((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        isMaximized: !current[id].isMaximized,
+        isMinimized: false,
+      },
+    }));
+    bringToFront(id);
+  };
+
+  const restoreWindow = (id: WindowId) => {
+    setWindows((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        isOpen: true,
+        isMinimized: false,
+      },
+    }));
+    bringToFront(id);
+  };
+
+  const updateWindowPosition = (id: WindowId, position: { x: number; y: number }) => {
+    setWindows((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        position,
+      },
+    }));
+  };
+
+  const sendContactTransmission = async () => {
+    const message = contactMessage.trim();
+
+    if (!message) {
+      setContactError('Add a message before sending.');
+      return;
+    }
+
+    setContactStatus('sending');
+    setContactError(null);
+
+    try {
+      const response = await fetch(contactApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(payload?.error ?? 'Transmission failed.');
+      }
+
+      setContactStatus('success');
+      setContactMessage('');
+    } catch (error) {
+      setContactStatus('error');
+      setContactError(error instanceof Error ? error.message : 'Transmission failed.');
+    }
+  };
+
+  const icons: Array<{ id: WindowId; title: string; icon: React.ReactNode; color: string }> = [
     { id: 'about', title: 'About_Me.txt', icon: <User size={32} />, color: 'text-blue-400' },
     { id: 'projects', title: 'Projects', icon: <Folder size={32} />, color: 'text-yellow-400' },
     { id: 'skills', title: 'Skills.exe', icon: <Code size={32} />, color: 'text-green-400' },
@@ -309,7 +622,7 @@ export const Desktop: React.FC = () => {
   ];
 
   return (
-    <div className="relative w-full h-[100svh] md:h-full px-4 pt-4 pb-14 md:p-6 select-none overflow-hidden">
+    <div ref={desktopRef} className="relative w-full h-[100svh] md:h-full px-4 pt-4 pb-14 md:p-6 select-none overflow-hidden">
       <MatrixBackground />
       
       {/* Glitch Text Background */}
@@ -341,12 +654,22 @@ export const Desktop: React.FC = () => {
       <Clippy visible={clippyVisible} onClose={() => setClippyVisible(false)} />
       
       <Window
+        id="about"
         title="About_Me.txt"
         icon={<User size={16} />}
-        isOpen={openWindows.includes('about')}
+        isOpen={windows.about.isOpen}
+        isMinimized={windows.about.isMinimized}
+        isMaximized={windows.about.isMaximized}
         onClose={() => closeWindow('about')}
-        zIndex={activeWindow === 'about' ? 50 : 10}
-        onFocus={() => setActiveWindow('about')}
+        onMinimize={() => minimizeWindow('about')}
+        onMaximize={() => maximizeWindow('about')}
+        zIndex={20 + windowOrder.indexOf('about')}
+        onFocus={() => bringToFront('about')}
+        position={windows.about.position}
+        onPositionChange={(position) => updateWindowPosition('about', position)}
+        desktopRef={desktopRef}
+        isDesktop={isDesktop}
+        supportsWindowChrome={supportsWindowChrome}
       >
         <div className="flex flex-col gap-8">
           <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
@@ -510,12 +833,22 @@ export const Desktop: React.FC = () => {
       </Window>
 
       <Window
+        id="projects"
         title="Projects"
         icon={<Folder size={16} />}
-        isOpen={openWindows.includes('projects')}
+        isOpen={windows.projects.isOpen}
+        isMinimized={windows.projects.isMinimized}
+        isMaximized={windows.projects.isMaximized}
         onClose={() => closeWindow('projects')}
-        zIndex={activeWindow === 'projects' ? 50 : 10}
-        onFocus={() => setActiveWindow('projects')}
+        onMinimize={() => minimizeWindow('projects')}
+        onMaximize={() => maximizeWindow('projects')}
+        zIndex={20 + windowOrder.indexOf('projects')}
+        onFocus={() => bringToFront('projects')}
+        position={windows.projects.position}
+        onPositionChange={(position) => updateWindowPosition('projects', position)}
+        desktopRef={desktopRef}
+        isDesktop={isDesktop}
+        supportsWindowChrome={supportsWindowChrome}
       >
         <div className="space-y-8">
           <a
@@ -608,12 +941,22 @@ export const Desktop: React.FC = () => {
       </Window>
 
       <Window
+        id="skills"
         title="Skills.exe"
         icon={<Code size={16} />}
-        isOpen={openWindows.includes('skills')}
+        isOpen={windows.skills.isOpen}
+        isMinimized={windows.skills.isMinimized}
+        isMaximized={windows.skills.isMaximized}
         onClose={() => closeWindow('skills')}
-        zIndex={activeWindow === 'skills' ? 50 : 10}
-        onFocus={() => setActiveWindow('skills')}
+        onMinimize={() => minimizeWindow('skills')}
+        onMaximize={() => maximizeWindow('skills')}
+        zIndex={20 + windowOrder.indexOf('skills')}
+        onFocus={() => bringToFront('skills')}
+        position={windows.skills.position}
+        onPositionChange={(position) => updateWindowPosition('skills', position)}
+        desktopRef={desktopRef}
+        isDesktop={isDesktop}
+        supportsWindowChrome={supportsWindowChrome}
       >
         <div className="space-y-6">
           <div>
@@ -651,40 +994,111 @@ export const Desktop: React.FC = () => {
       </Window>
 
       <Window
+        id="contact"
         title="Contact.sh"
         icon={<Mail size={16} />}
-        isOpen={openWindows.includes('contact')}
+        isOpen={windows.contact.isOpen}
+        isMinimized={windows.contact.isMinimized}
+        isMaximized={windows.contact.isMaximized}
         onClose={() => closeWindow('contact')}
-        zIndex={activeWindow === 'contact' ? 50 : 10}
-        onFocus={() => setActiveWindow('contact')}
+        onMinimize={() => minimizeWindow('contact')}
+        onMaximize={() => maximizeWindow('contact')}
+        zIndex={20 + windowOrder.indexOf('contact')}
+        onFocus={() => bringToFront('contact')}
+        position={windows.contact.position}
+        onPositionChange={(position) => updateWindowPosition('contact', position)}
+        desktopRef={desktopRef}
+        isDesktop={isDesktop}
+        supportsWindowChrome={supportsWindowChrome}
         maxWidth="md:max-w-md"
       >
         <div className="flex flex-col gap-3 md:gap-4">
-          <p className="text-[10px] md:text-sm opacity-80 shrink-0">Open to senior production leadership and product delivery opportunities.</p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto pr-1 custom-scrollbar content-start">
-            <div className="flex items-center gap-2 md:gap-3 min-h-20 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">
-              <Mail size={16} className="text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
-              <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-[8px] uppercase opacity-40 font-bold tracking-widest">Email</span>
-                <span className="text-[9px] md:text-sm truncate font-mono text-retro-green">samir.akhmedoff@gmail.com</span>
+          {contactStatus === 'success' ? (
+            <div className="min-h-[340px] md:min-h-[420px] flex flex-col items-center justify-center text-center gap-5 border border-retro-green/30 bg-retro-green/5 p-5 md:p-8">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-retro-green bg-black/40 text-retro-green shadow-[0_0_30px_rgba(51,255,51,0.28)]">
+                <Mail size={30} />
+                <span className="absolute inset-0 rounded-full border border-retro-green/50 animate-ping" />
               </div>
-            </div>
-            
-            <div className="flex items-center gap-2 md:gap-3 min-h-20 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0">
-              <Code size={16} className="text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
-              <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-[8px] uppercase opacity-40 font-bold tracking-widest">Github</span>
-                <span className="text-[9px] md:text-sm truncate font-mono text-retro-green">github.com/sammythaitiger</span>
+              <div className="space-y-2">
+                <div className="text-[10px] uppercase tracking-[0.35em] text-retro-amber">Transmission Delivered</div>
+                <h3 className="text-xl md:text-2xl font-black text-retro-green">Message sent</h3>
+                <p className="text-[11px] md:text-sm opacity-80 max-w-md">
+                  Your message has been delivered to <span className="text-retro-green">samuelaroundtheworld@gmail.com</span>.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setContactStatus('idle');
+                  setContactError(null);
+                }}
+                onPointerDownCapture={(event) => event.stopPropagation()}
+                className="w-full md:w-auto px-5 py-2 bg-white/10 border border-white/10 text-white font-bold hover:bg-white/15 transition-colors uppercase tracking-[0.2em] text-[10px] md:text-xs"
+              >
+                New Transmission
+              </button>
             </div>
-          </div>
+          ) : (
+            <>
+              <p className="text-[10px] md:text-sm opacity-80 shrink-0">
+                Open to senior production leadership and product delivery opportunities.
+              </p>
 
-          <div className="pt-2 shrink-0">
-            <button className="w-full py-2 bg-red-600 text-white font-bold hover:bg-red-500 transition-colors uppercase tracking-[0.2em] text-[10px] md:text-xs shadow-[0_0_15px_rgba(220,38,38,0.3)]">
-              SEND_TRANSMISSION
-            </button>
-          </div>
+              <div className="space-y-2">
+                <label className="block text-[8px] uppercase opacity-40 font-bold tracking-widest">Transmission</label>
+                <textarea
+                  value={contactMessage}
+                  onChange={(event) => setContactMessage(event.target.value)}
+                  placeholder="Type your message here..."
+                  onPointerDownCapture={(event) => event.stopPropagation()}
+                  className="w-full min-h-20 md:min-h-24 resize-none rounded-sm border border-white/10 bg-black/40 px-3 py-3 font-mono text-[11px] md:text-sm text-retro-green placeholder:text-white/25 outline-none transition-colors focus:border-retro-green/50 focus:bg-black/55"
+                />
+                {contactError ? (
+                  <p className="text-[10px] md:text-xs text-red-400 uppercase tracking-[0.2em]">{contactError}</p>
+                ) : null}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 overflow-y-auto pr-1 custom-scrollbar content-start">
+                <a
+                  href="mailto:samuelaroundtheworld@gmail.com"
+                  onPointerDownCapture={(event) => event.stopPropagation()}
+                  className="flex items-center gap-2 md:gap-3 min-h-16 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0"
+                >
+                  <Mail size={16} className="text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="flex flex-col min-w-0 overflow-hidden">
+                    <span className="text-[8px] uppercase opacity-40 font-bold tracking-widest">Email</span>
+                    <span className="text-[9px] md:text-sm truncate font-mono text-retro-green">samuelaroundtheworld@gmail.com</span>
+                  </div>
+                </a>
+
+                <a
+                  href={githubProfileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onPointerDownCapture={(event) => event.stopPropagation()}
+                  className="flex items-center gap-2 md:gap-3 min-h-16 p-3 md:p-3 bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer rounded-sm group min-w-0"
+                >
+                  <Code size={16} className="text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="flex flex-col min-w-0 overflow-hidden">
+                    <span className="text-[8px] uppercase opacity-40 font-bold tracking-widest">Github</span>
+                    <span className="text-[9px] md:text-sm truncate font-mono text-retro-green">github.com/sammythaitiger</span>
+                  </div>
+                </a>
+              </div>
+
+              <div className="pt-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={sendContactTransmission}
+                  disabled={contactStatus === 'sending'}
+                  onPointerDownCapture={(event) => event.stopPropagation()}
+                  className="w-full py-2 bg-red-600 text-white font-bold hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-70 transition-colors uppercase tracking-[0.2em] text-[10px] md:text-xs shadow-[0_0_15px_rgba(220,38,38,0.3)]"
+                >
+                  {contactStatus === 'sending' ? 'TRANSMITTING...' : 'SEND_TRANSMISSION'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </Window>
 
@@ -695,13 +1109,20 @@ export const Desktop: React.FC = () => {
             START
           </div>
           <div className="flex gap-1 md:gap-2 overflow-x-auto no-scrollbar">
-            {openWindows.map(id => (
+            {icons
+              .map((item) => item.id)
+              .filter((id) => windows[id].isOpen)
+              .map((id) => (
               <div 
                 key={id} 
-                onClick={() => setActiveWindow(id)}
+                onClick={() => restoreWindow(id)}
                 className={cn(
                   "px-2 md:px-3 py-1 text-[9px] md:text-[10px] font-mono border border-[#333] cursor-pointer transition-colors whitespace-nowrap",
-                  activeWindow === id ? "bg-[#333] text-retro-green" : "hover:bg-[#222]"
+                  activeWindow === id && !windows[id].isMinimized
+                    ? "bg-[#333] text-retro-green"
+                    : windows[id].isMinimized
+                      ? "bg-[#111] text-white/60 hover:bg-[#222]"
+                      : "hover:bg-[#222]"
                 )}
               >
                 {icons.find(i => i.id === id)?.title.split('.')[0]}
