@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
-import { Folder, User, Code, Mail, X, Minus, Square } from 'lucide-react';
+import { Folder, User, Code, Mail, X, Minus, Square, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { ScrambleText } from '@/src/components/ScrambleText';
+import { playWindowOpen, playWindowClose, playMailSuccess, playKeyClack } from '@/src/lib/sounds';
 
 const aboutPhotoSrc = '/images/about-samir.jpg';
 const luckyStrikeScreenshots = [
@@ -261,13 +262,143 @@ const windowCascadeOrder: Record<WindowId, number> = {
   contact: 3,
 };
 
-const GlitchText: React.FC = () => {
+const INSTALL_PACKAGES = [
+  { name: 'react',               version: '19.0.0',  color: 'text-retro-green' },
+  { name: 'react-native',        version: '0.76.5',  color: 'text-retro-green' },
+  { name: 'expo',                version: '52.0.0',  color: 'text-retro-green' },
+  { name: 'next',                version: '15.3.0',  color: 'text-retro-green' },
+  { name: 'typescript',          version: '5.8.2',   color: 'text-retro-green' },
+  { name: 'tailwindcss',         version: '4.1.14',  color: 'text-retro-green' },
+  { name: 'node',                version: '22.0.0',  color: 'text-blue-400'    },
+  { name: 'postgresql',          version: '16.2.0',  color: 'text-blue-400'    },
+  { name: 'redis',               version: '8.0.0',   color: 'text-blue-400'    },
+  { name: 'docker',              version: '27.3.1',  color: 'text-blue-400'    },
+  { name: '@samir/leadership',   version: '12.0.0',  color: 'text-retro-amber' },
+  { name: '@samir/delivery',     version: '10.0.0',  color: 'text-retro-amber' },
+  { name: '@samir/product-ops',  version: '8.0.0',   color: 'text-retro-amber' },
+] as const;
+
+const SKILL_BARS = [
+  { label: 'Production Leadership', pct: 99, hex: '#f59e0b' },
+  { label: 'Team Management',       pct: 97, hex: '#f59e0b' },
+  { label: 'React / React Native',  pct: 95, hex: '#33ff33' },
+  { label: 'TypeScript',            pct: 92, hex: '#33ff33' },
+  { label: 'Expo / Mobile',         pct: 85, hex: '#33ff33' },
+  { label: 'Node.js / Backend',     pct: 80, hex: '#60a5fa' },
+  { label: 'DevOps / Infra',        pct: 70, hex: '#60a5fa' },
+] as const;
+
+const SkillsTerminal: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
+  const [revealed, setRevealed] = useState(0);
+  const [barsActive, setBarsActive] = useState(false);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setRevealed(0);
+      setBarsActive(false);
+      setDone(false);
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const PKG_DELAY = 140;
+
+    INSTALL_PACKAGES.forEach((_, i) => {
+      timers.push(setTimeout(() => setRevealed(i + 1), 600 + i * PKG_DELAY));
+    });
+
+    const lastPkg = 600 + (INSTALL_PACKAGES.length - 1) * PKG_DELAY;
+    timers.push(setTimeout(() => setBarsActive(true), lastPkg + 500));
+    timers.push(setTimeout(() => setDone(true), lastPkg + 1400));
+
+    return () => timers.forEach(clearTimeout);
+  }, [isOpen]);
+
+  const totalTime = ((600 + (INSTALL_PACKAGES.length - 1) * 140 + 200) / 1000).toFixed(1);
+
+  return (
+    <div className="font-mono text-xs leading-5">
+      <div className="text-retro-green/60 mb-3">
+        <span className="text-retro-amber">samir</span>
+        <span className="text-white/40">@sammy-os</span>
+        <span className="text-white/25">:~$ </span>
+        <span className="text-white/90">npm install @samir/skills</span>
+      </div>
+
+      {revealed > 0 && (
+        <div className="text-white/30 mb-2 space-y-0.5">
+          <div>npm warn saveError ENOENT: no such file or directory</div>
+          <div>npm notice created a lockfile as package-lock.json</div>
+          <div>npm warn optional SKIPPING OPTIONAL DEPENDENCY: node-gyp</div>
+        </div>
+      )}
+
+      <div className="space-y-0.5 mb-2">
+        {INSTALL_PACKAGES.slice(0, revealed).map((pkg) => (
+          <div key={pkg.name} className="flex items-center gap-2">
+            <span className="text-retro-green shrink-0">✓</span>
+            <span className={cn('shrink-0', pkg.color)}>{pkg.name}</span>
+            <span className="text-white/30">@{pkg.version}</span>
+          </div>
+        ))}
+      </div>
+
+      {revealed >= INSTALL_PACKAGES.length && (
+        <div className="text-white/60 mb-4">
+          added {INSTALL_PACKAGES.length} packages in {totalTime}s
+        </div>
+      )}
+
+      {barsActive && (
+        <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+          <div className="text-retro-amber uppercase tracking-[0.25em] text-[9px] mb-3">
+            skill matrix initialized
+          </div>
+          {SKILL_BARS.map((bar, i) => (
+            <div key={bar.label} className="flex items-center gap-2">
+              <div className="w-36 shrink-0 text-white/50 text-[10px] truncate">{bar.label}</div>
+              <div className="flex-1 h-1.5 bg-white/5 overflow-hidden">
+                <div
+                  style={{
+                    width: `${bar.pct}%`,
+                    backgroundColor: bar.hex,
+                    height: '100%',
+                    transition: `width 0.7s ease-out ${i * 80}ms`,
+                    boxShadow: `0 0 6px ${bar.hex}66`,
+                  }}
+                />
+              </div>
+              <div className="w-8 text-right text-[9px]" style={{ color: bar.hex }}>{bar.pct}%</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {done && (
+        <div className="mt-4 space-y-0.5">
+          <div className="text-retro-green/70">&gt; @samir/skills@1.0.0 postinstall</div>
+          <div className="text-white/30">&gt; echo "all systems operational"</div>
+          <div className="text-retro-green mt-1">all systems operational</div>
+          <div className="text-white/20 mt-2">
+            <span className="text-retro-amber">samir</span>
+            <span className="text-white/20">@sammy-os</span>
+            <span className="text-white/15">:~$ </span>
+            <span className="animate-pulse">█</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const GlitchText: React.FC<{ onCharReveal?: () => void }> = ({ onCharReveal }) => {
   return (
     <div className="relative pointer-events-none select-none flex flex-col items-center justify-center w-full max-w-full px-4 text-center">
       <div className="relative w-full flex justify-center">
         {/* Main Text — metallic gradient + shimmer */}
         <div className="text-lux-red text-4xl sm:text-5xl md:text-8xl font-black tracking-tighter uppercase relative z-10 break-words w-full">
-          <ScrambleText text="Samir Akhmedoff" duration={1400} />
+          <ScrambleText text="Samir Akhmedoff" duration={1400} onReveal={onCharReveal} />
         </div>
 
         {/* Chromatic aberration ghosts */}
@@ -431,10 +562,18 @@ export const Desktop: React.FC = () => {
   const [activeWindow, setActiveWindow] = useState<WindowId | null>(null);
   const [clippyVisible, setClippyVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const soundRef = useRef(false);
   const [contactMessage, setContactMessage] = useState('');
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [contactError, setContactError] = useState<string | null>(null);
   const [viewportMode, setViewportMode] = useState<'mobile' | 'compact' | 'desktop'>('mobile');
+
+  useEffect(() => { soundRef.current = soundEnabled; }, [soundEnabled]);
+
+  useEffect(() => {
+    if (contactStatus === 'success' && soundRef.current) playMailSuccess();
+  }, [contactStatus]);
   const isDesktop = viewportMode === 'desktop';
   const supportsWindowChrome = viewportMode !== 'mobile';
 
@@ -498,6 +637,7 @@ export const Desktop: React.FC = () => {
   };
 
   const toggleWindow = (id: WindowId) => {
+    if (soundRef.current) playWindowOpen();
     setWindows((current) => {
       const shouldResetPosition = !current[id].isOpen;
 
@@ -521,6 +661,7 @@ export const Desktop: React.FC = () => {
   };
 
   const closeWindow = (id: WindowId) => {
+    if (soundRef.current) playWindowClose();
     setWindows((current) => ({
       ...current,
       [id]: {
@@ -568,6 +709,7 @@ export const Desktop: React.FC = () => {
   };
 
   const restoreWindow = (id: WindowId) => {
+    if (soundRef.current) playWindowOpen();
     setWindows((current) => ({
       ...current,
       [id]: {
@@ -636,7 +778,7 @@ export const Desktop: React.FC = () => {
       
       {/* Glitch Text Background */}
       <div className="absolute top-[54%] md:top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none w-full flex justify-center items-center">
-        <GlitchText />
+        <GlitchText onCharReveal={soundRef.current ? playKeyClack : undefined} />
       </div>
 
       {/* Desktop Icons */}
@@ -714,6 +856,7 @@ export const Desktop: React.FC = () => {
                   text="SYSTEM_ARCHITECT: SAMIR_AKHMEDOFF"
                   duration={1100}
                   trigger={windows.about.isOpen}
+                  onReveal={soundEnabled ? playKeyClack : undefined}
                 />
               </span>
             </h2>
@@ -977,39 +1120,7 @@ export const Desktop: React.FC = () => {
         isDesktop={isDesktop}
         supportsWindowChrome={supportsWindowChrome}
       >
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-retro-amber mb-3">MANAGEMENT_&_PRODUCTION:</h3>
-            <div className="p-3 border border-retro-green/30 bg-retro-green/5 rounded-sm mb-4">
-              <p className="text-retro-green font-bold mb-1">PRODUCTION_MANAGER_EXPERIENCE</p>
-              <p className="text-xs opacity-80">
-                Extensive experience in production management, overseeing full-cycle development processes, 
-                resource allocation, and high-stakes delivery pipelines.
-              </p>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-retro-amber mb-3">FRONTEND_STACK:</h3>
-            <div className="flex flex-wrap gap-2">
-              {['React', 'React Native', 'React Native Paper', 'TypeScript', 'Tailwind', 'Motion', 'Next.js'].map(s => (
-                <span key={s} className="px-2 py-1 bg-retro-green/10 border border-retro-green/30 text-retro-green text-[10px]">{s}</span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-retro-amber mb-3">BACKEND_STACK:</h3>
-            <div className="flex flex-wrap gap-2">
-              {['Node.js', 'Express', 'PostgreSQL', 'Redis', 'Docker', 'GraphQL'].map(s => (
-                <span key={s} className="px-2 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px]">{s}</span>
-              ))}
-            </div>
-          </div>
-          <div className="p-4 bg-black/50 border border-dashed border-[#333]">
-            <p className="text-[10px] opacity-50 italic">
-              "The only limit is the size of your swap file."
-            </p>
-          </div>
-        </div>
+        <SkillsTerminal isOpen={windows.skills.isOpen} />
       </Window>
 
       <Window
@@ -1149,11 +1260,23 @@ export const Desktop: React.FC = () => {
             ))}
           </div>
         </div>
-        <div 
-          onClick={() => setClippyVisible(!clippyVisible)}
-          className="text-[9px] md:text-[10px] font-mono opacity-50 shrink-0 ml-2 cursor-pointer hover:opacity-100 transition-opacity"
-        >
-          {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-2">
+          <button
+            onClick={() => setSoundEnabled(v => !v)}
+            title={soundEnabled ? 'Sound: ON' : 'Sound: OFF'}
+            className={cn(
+              'p-1 rounded-sm transition-colors',
+              soundEnabled ? 'text-retro-green' : 'text-white/25 hover:text-white/60'
+            )}
+          >
+            {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+          </button>
+          <div
+            onClick={() => setClippyVisible(!clippyVisible)}
+            className="text-[9px] md:text-[10px] font-mono opacity-50 cursor-pointer hover:opacity-100 transition-opacity"
+          >
+            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
         </div>
       </div>
 

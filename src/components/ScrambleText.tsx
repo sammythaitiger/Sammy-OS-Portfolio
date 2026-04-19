@@ -7,6 +7,7 @@ interface ScrambleTextProps {
   duration?: number;
   trigger?: unknown;
   className?: string;
+  onReveal?: () => void;
 }
 
 export const ScrambleText: React.FC<ScrambleTextProps> = ({
@@ -14,18 +15,29 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
   duration = 900,
   trigger,
   className,
+  onReveal,
 }) => {
   const [display, setDisplay] = useState(text);
   const rafRef = useRef<number | null>(null);
+  const prevRevealRef = useRef(0);
+  const callCountRef = useRef(0);
 
   useEffect(() => {
     const start = performance.now();
     const chars = Array.from(text);
+    prevRevealRef.current = 0;
+    callCountRef.current = 0;
 
     const tick = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const revealCount = Math.floor(progress * chars.length);
+
+      if (onReveal && revealCount > prevRevealRef.current) {
+        callCountRef.current += revealCount - prevRevealRef.current;
+        if (callCountRef.current % 3 === 0) onReveal();
+        prevRevealRef.current = revealCount;
+      }
 
       const next = chars
         .map((ch, i) => {
